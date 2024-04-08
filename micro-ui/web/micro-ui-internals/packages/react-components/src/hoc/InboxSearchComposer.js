@@ -222,7 +222,11 @@ const InboxSearchComposer = ({configs}) => {
 
                             <ResultsTable 
                                 config={configs?.sections?.searchResult?.uiConfig} 
-                                data={data} 
+                                data={data || {items:[
+                                    { id: 0, babyFirstName: "Ganesh", babyLastName: "Agarwal", hospitalName: "KokilaBen Speciality Hospital", placeOfBirth: "Jamnagar" },
+                                    { id: 1, babyFirstName: "Kartikey", babyLastName: "Deshpande", hospitalName: "Sharada Speciality Hospital", placeOfBirth: "Pune" },
+                                    { id: 2, babyFirstName: "Ayappan", babyLastName: "Reddy", hospitalName: "Government Speciality Hospital", placeOfBirth: "Jamnagar" },
+                                  ]}} 
                                 isLoading={isLoading} 
                                 isFetching={isFetching} 
                                 fullConfig={configs}/>

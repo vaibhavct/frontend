@@ -1,9 +1,148 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { format, isValid } from "date-fns";
-import { Header, Loader } from "@egovernments/digit-ui-react-components";
+import { Header, InboxSearchComposer, Loader } from "@egovernments/digit-ui-react-components";
 import DesktopInbox from "./DesktopInbox";
 import { useQuery } from "react-query";
+
+const Digit = window?.Digit || {};
+const config = {
+  label: "ES_COMMON_INBOX",
+  type: "inbox",
+  apiDetails: {
+    serviceName: "/inbox/v2/_search",
+    requestParam: {},
+    requestBody: {
+      inbox: {
+        processSearchCriteria: {
+          businessService: ["PQM"],
+          moduleName: "pqm",
+          tenantId: "pg.citya",
+        },
+        moduleSearchCriteria: {
+          plantCodes: ["PURI_FSTP"],
+          tenantId: "pg.citya",
+        },
+        tenantId: "pg.citya",
+      },
+    },
+    minParametersForSearchForm: 1,
+    tableFormJsonPath: "requestBody.inbox",
+    masterName: "commonUiConfig",
+    moduleName: "birthRegistrationConfig",
+    filterFormJsonPath: "requestBody.inbox.moduleSearchCriteria",
+    searchFormJsonPath: "requestBody.inbox.moduleSearchCriteria",
+  },
+  sections: {
+    search: {
+      uiConfig: {
+        headerStyle: null,
+        type: "birth-registration-table-search",
+        primaryLabel: "ES_COMMON_SEARCH",
+        secondaryLabel: "ES_COMMON_CLEAR_SEARCH",
+        minReqFields: 1,
+        defaultValues: {
+          testIds: "",
+        },
+        fields: [
+          {
+            label: "Baby's First Name",
+            type: "text",
+            isMandatory: false,
+            disable: false,
+            populators: {
+              name: "testIds",
+              error: "BR_PATTERN_ERR_MSG",
+              validation: {
+                pattern: {},
+                minlength: 2,
+              },
+            },
+          },
+        ],
+      },
+      label: "",
+      children: {},
+      show: true,
+    },
+    links: {
+      uiConfig: {
+        links: [
+          {
+            text: "CREATE_BIRTH_REGISTRATION",
+            url: "/employee/br/birth",
+            roles: [],
+          },
+        ],
+        label: "ES_COMMON_INBOX",
+        logoIcon: {
+          component: "PropertyHouse",
+          customClass: "inbox-search-icon--projects",
+        },
+      },
+      children: {},
+      show: true,
+    },
+    filter: {
+      uiConfig: {
+        type: "filter",
+        headerStyle: null,
+        primaryLabel: "ES_COMMON_APPLY",
+        minReqFields: 0,
+        secondaryLabel: "",
+        defaultValues: {
+          createdFrom: "",
+          createdTo: "",
+        },
+        fields: [
+          {
+            label: "STATUS",
+            type: "dropdown",
+            isMandatory: false,
+            disable: false,
+            populators: {
+              name: "status",
+              options: ["in-progress", "pending", "registered"],
+            },
+          },
+        ],
+      },
+      label: "ES_COMMON_FILTERS",
+      show: true,
+    },
+    searchResult: {
+      label: "",
+      uiConfig: {
+        columns: [
+          {
+            label: "Baby's First Name",
+            jsonPath: "babyFirstName",
+            additionalCustomization: true,
+          },
+          {
+            label: "Baby's Last Name",
+            jsonPath: "babyLastName",
+          },
+          {
+            label: "Place Of Birth",
+            jsonPath: "placeOfBirth",
+          },
+          {
+            label: "Hospital Name",
+            jsonPath: "hospitalName",
+          },
+        ],
+        enableGlobalSearch: false,
+        enableColumnSort: true,
+        resultsJsonPath: "items",
+      },
+      children: {},
+      show: true,
+    },
+  },
+  additionalSections: {},
+};
+
 const Inbox = ({ tenants, parentRoute }) => {
   const { t } = useTranslation();
   Digit.SessionStorage.set("ENGAGEMENT_TENANTS", tenants);
@@ -99,29 +238,15 @@ const Inbox = ({ tenants, parentRoute }) => {
     { id: 2, babyFirstName: "Ayappan", babyLastName: "Reddy", hospitalName: "Government Speciality Hospital", placeOfBirth: "Jamnagar" },
   ];
   return (
-    <div>
-      <Header>{t("Birth-registration")}</Header>
-      <p>{}</p>
-      <DesktopInbox
-        t={t}
-        data={mockData || brData?.data?.BirthRegistrationApplications}
-        links={links}
-        parentRoute={parentRoute}
-        searchParams={searchParams}
-        onSearch={onSearch}
-        globalSearch={globalSearch}
-        searchFields={getSearchFields()}
-        onFilterChange={handleFilterChange}
-        pageSizeLimit={pageSize}
-        totalRecords={data?.totalCount}
-        title={"Birth-registration"}
-        iconName={"calender"}
-        currentPage={parseInt(pageOffset / pageSize)}
-        onNextPage={fetchNextPage}
-        onPrevPage={fetchPrevPage}
-        onPageSizeChange={handlePageSizeChange}
-      />
-    </div>
+    <React.Fragment>
+      <div>
+        <Header>{t("Birth-registration")}</Header>
+        <p>{}</p>
+        <div className="inbox-search-wrapper">
+          <InboxSearchComposer configs={config}></InboxSearchComposer>
+        </div>
+      </div>
+    </React.Fragment>
   );
 };
 
